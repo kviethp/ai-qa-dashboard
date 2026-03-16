@@ -1,0 +1,18 @@
+{
+  "lead_qa": {
+    "status": "idle",
+    "message": "Sẵn sàng"
+  },
+  "automation": {
+    "status": "idle",
+    "message": "Sẵn sàng"
+  },
+  "reviewer": {
+    "status": "idle",
+    "message": "Sẵn sàng"
+  },
+  "secretary": {
+    "status": "idle",
+    "message": "Sẵn sàng"
+  }
+}
