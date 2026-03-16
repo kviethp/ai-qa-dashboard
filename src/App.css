@@ -37,6 +37,7 @@ header h1 {
   font-size: 1.8rem;
   background: linear-gradient(to right, #818cf8, #c084fc);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -205,11 +206,132 @@ td {
   border-left: 4px solid var(--primary);
 }
 
+/* Command Section */
+.command-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border-radius: 1rem;
+}
+
+.command-box {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.command-box input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.8rem;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
+
+.command-box input:focus {
+  border-color: var(--primary);
+}
+
+.command-box button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 0 1.5rem;
+  border-radius: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.command-box button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.command-box button:hover:not(:disabled) {
+  background: #4f46e5;
+  transform: scale(1.05);
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+/* Responsive Grid Row */
+.responsive-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Media Queries for Mobile */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  header {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .header-main h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .value {
+    font-size: 1.8rem;
+  }
+
+  .agent-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .responsive-row {
+    grid-template-columns: 1fr;
+  }
+
+  .command-box {
+    flex-direction: column;
+  }
+
+  .command-box button {
+    padding: 0.8rem;
+  }
+
+  .reports-section, .memory-section {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 footer {
   text-align: center;
   margin-top: 3rem;
   color: #64748b;
   font-size: 0.9rem;
+  padding-bottom: 2rem;
 }
 
 footer span {
