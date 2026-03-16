@@ -5,18 +5,18 @@
   },
   "lead_qa": {
     "status": "idle",
-    "message": "Hoàn tất"
+    "message": "Sẵn sàng"
   },
   "automation": {
-    "status": "testing",
-    "message": "Đang chạy e2e/tests/ai_generated.spec.ts..."
+    "status": "working",
+    "message": "Đang xử lý: Viết/Sửa code cho task: Tôi sẽ..."
   },
   "reviewer": {
     "status": "idle",
     "message": "Sẵn sàng"
   },
   "secretary": {
-    "status": "working",
-    "message": "Đang xử lý: Báo cáo kết quả Perfect Ph1 ch..."
+    "status": "idle",
+    "message": "Hoàn tất"
   }
 }

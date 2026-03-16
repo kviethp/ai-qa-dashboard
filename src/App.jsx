@@ -1,16 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './App.css';
 import { database, ref, onValue, set, isConfigured } from './firebase';
-import { 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip 
-} from 'recharts';
-import { Activity, Cpu, Database, Clipboard, Layout, FileText, Send, MessageSquare, Check, X, Maximize2 } from 'lucide-react';
+import { Clipboard, Layout, FileText, Send, MessageSquare, Check, X, Maximize2 } from 'lucide-react';
 
 const Dashboard = () => {
   const [stats] = useState({
@@ -33,25 +24,8 @@ const Dashboard = () => {
   const [approvalFeedback, setApprovalFeedback] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [dragActive, setDragActive] = useState(false);
-  const [healthData, setHealthData] = useState([]);
   const [agentChatInput, setAgentChatInput] = useState("");
   const [isFullContext, setIsFullContext] = useState(false);
-
-  // Width detection for charts
-  const [containerWidth, setContainerWidth] = useState(0);
-  const chartWrapperRef = useRef(null);
-
-  useEffect(() => {
-    const updateWidth = () => {
-      if (chartWrapperRef.current) {
-        setContainerWidth(chartWrapperRef.current.offsetWidth);
-      }
-    };
-    updateWidth();
-    const observer = new ResizeObserver(updateWidth);
-    if (chartWrapperRef.current) observer.observe(chartWrapperRef.current);
-    return () => observer.disconnect();
-  }, []);
 
 
   useEffect(() => {
@@ -121,20 +95,6 @@ const Dashboard = () => {
   const [isSending, setIsSending] = useState(false);
   const fileInputRef = React.useRef(null);
 
-  // Health Data Simulator (or can be connected to real stats)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHealthData(prev => {
-        const newData = [...prev, {
-          time: new Date().toLocaleTimeString().slice(-8),
-          latency: Math.floor(Math.random() * 200) + 100,
-          tokens: Math.floor(Math.random() * 500) + 800
-        }].slice(-15);
-        return newData;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -243,36 +203,6 @@ const Dashboard = () => {
       </header>
 
       <main>
-        {/* System Health Monitor (Proposal 4) */}
-        <section className="health-section glass">
-          <div className="section-header">
-            <h2><Activity size={20} /> System Health & Intelligence</h2>
-            <div className="health-stats">
-              <div className="stat-pill"><Cpu size={14} /> Latency: {healthData[healthData.length-1]?.latency}ms</div>
-              <div className="stat-pill"><Database size={14} /> Tokens/s: {healthData[healthData.length-1]?.tokens}</div>
-            </div>
-          </div>
-          <div className="chart-container" style={{ height: 180, width: '100%', marginTop: '1rem' }}>
-            <ResponsiveContainer>
-              <AreaChart data={healthData}>
-                <defs>
-                  <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="time" hide />
-                <YAxis hide />
-                <Tooltip 
-                  contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '8px' }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <Area type="monotone" dataKey="latency" stroke="#6366f1" fillOpacity={1} fill="url(#colorLatency)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
 
         {currentApproval && currentApproval.status === 'pending' && (
           <section className="approval-section glass">
