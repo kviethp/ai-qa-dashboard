@@ -202,11 +202,11 @@ const Dashboard = () => {
                 >
                   📎 Đính kèm File (TXT/MD/DOCX)
                 </button>
+                <button className="btn-send-main" onClick={pushCommand} disabled={isSending || !taskInput.trim()}>
+                  {isSending ? "Đang gửi..." : "🚀 Gửi Yêu Cầu"}
+                </button>
               </div>
             </div>
-            <button className="btn-send-main" onClick={pushCommand} disabled={isSending || !taskInput.trim()}>
-              {isSending ? "Đang gửi..." : "🚀 Gửi Yêu Cầu"}
-            </button>
           </div>
           <p className="hint">Mẹo: Thêm tài liệu tham khảo (Nghiệp vụ) giúp AI chuẩn xác 100% không bị ảo giác.</p>
         </section>
