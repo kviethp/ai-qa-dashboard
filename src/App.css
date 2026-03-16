@@ -152,6 +152,16 @@ header h1 {
   100% { opacity: 1; }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+
 .reports-section {
   padding: 2rem;
   border-radius: 1rem;
@@ -206,12 +216,90 @@ td {
   border-left: 4px solid var(--primary);
 }
 
-/* Command Section */
+/* Health Section Dashboard (Proposal 4) */
+.health-section {
+  grid-column: 1 / -1;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.health-stats {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+/* Command Section Refinement (Proposal 3) */
 .command-section {
   margin-bottom: 2rem;
   padding: 1.5rem;
   border-radius: 1rem;
+  position: relative;
+  transition: all 0.3s ease;
 }
+
+.command-section.drag-active {
+  border: 2px dashed var(--primary);
+  background: rgba(99, 102, 241, 0.1);
+  transform: scale(1.01);
+}
+
+.drag-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: var(--primary);
+  pointer-events: none;
+  border-radius: 1rem;
+}
+
+.input-with-icon {
+  position: relative;
+  width: 100%;
+}
+
+.input-with-icon .icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+.input-with-icon .icon.top {
+  top: 1.2rem;
+}
+
+.input-with-icon input, .input-with-icon textarea {
+  padding-left: 3rem !important;
+}
+
 
 .command-box {
   display: flex;
@@ -356,6 +444,32 @@ td {
 .dot.yellow { background: #f59e0b; }
 .dot.green { background: #10b981; }
 
+/* Terminal Interaction (Proposal 2) */
+.terminal-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: #94a3b8;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
 .terminal-body {
   height: 350px;
   overflow-y: auto;
@@ -363,8 +477,9 @@ td {
   font-family: 'Consolas', 'Courier New', monospace;
   font-size: 0.9rem;
   line-height: 1.5;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.6);
 }
+
 
 .log-line {
   margin-bottom: 0.4rem;

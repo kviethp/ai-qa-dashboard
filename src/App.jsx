@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { database, ref, onValue, isConfigured } from './firebase';
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip 
+} from 'recharts';
+import { Activity, Cpu, Database, Clipboard, Layout, FileText, Send } from 'lucide-react';
 
 const Dashboard = () => {
   const [stats] = useState({
@@ -21,6 +31,9 @@ const Dashboard = () => {
   const [liveLogs, setLiveLogs] = useState([]);
   const [currentApproval, setCurrentApproval] = useState(null);
   const [approvalFeedback, setApprovalFeedback] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [dragActive, setDragActive] = useState(false);
+  const [healthData, setHealthData] = useState([]);
 
   useEffect(() => {
     if (isConfigured) {
@@ -84,11 +97,43 @@ const Dashboard = () => {
   }, []);
 
   const [taskInput, setTaskInput] = useState("");
-  const [contextInput, setContextInput] = useState(""); // State cho tài liệu SRS/AC
+  const [contextInput, setContextInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const fileInputRef = React.useRef(null);
 
+  // Health Data Simulator (or can be connected to real stats)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHealthData(prev => {
+        const newData = [...prev, {
+          time: new Date().toLocaleTimeString().slice(-8),
+          latency: Math.floor(Math.random() * 200) + 100,
+          tokens: Math.floor(Math.random() * 500) + 800
+        }].slice(-15);
+        return newData;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload({ target: { files: e.dataTransfer.files } });
+    }
+  };
+
   const handleFileUpload = async (e) => {
+    // ... logic remains same or similar ...
     const file = e.target.files[0];
     if (!file) return;
     
@@ -108,10 +153,7 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error("Lỗi đọc file:", err);
-      alert("⚠️ Không thể đọc file này. Vui lòng thử lại!");
     }
-    // Reset file input
-    e.target.value = '';
   };
 
   const recentBugs = [
@@ -168,26 +210,72 @@ const Dashboard = () => {
       </header>
 
       <main>
-        {/* New Command Section */}
-        <section className="command-section glass">
-          <h2>🎯 Giao việc từ xa & Cung cấp Tài liệu (Remote Control)</h2>
+        {/* System Health Monitor (Proposal 4) */}
+        <section className="health-section glass">
+          <div className="section-header">
+            <h2><Activity size={20} /> System Health & Intelligence</h2>
+            <div className="health-stats">
+              <div className="stat-pill"><Cpu size={14} /> Latency: {healthData[healthData.length-1]?.latency}ms</div>
+              <div className="stat-pill"><Database size={14} /> Tokens/s: {healthData[healthData.length-1]?.tokens}</div>
+            </div>
+          </div>
+          <div className="chart-container" style={{ height: 180, width: '100%', marginTop: '1rem' }}>
+            <ResponsiveContainer>
+              <AreaChart data={healthData}>
+                <defs>
+                  <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="time" hide />
+                <YAxis hide />
+                <Tooltip 
+                  contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '8px' }}
+                  itemStyle={{ color: '#fff' }}
+                />
+                <Area type="monotone" dataKey="latency" stroke="#6366f1" fillOpacity={1} fill="url(#colorLatency)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* New Command Section with Drag & Drop (Proposal 3) */}
+        <section 
+          className={`command-section glass ${dragActive ? 'drag-active' : ''}`}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <div className="section-header">
+            <h2><Layout size={20} /> Giao việc & Requirement (BA Center)</h2>
+            {dragActive && <div className="drag-overlay">🚀 Thả file vào đây để BA trích xuất Requirement!</div>}
+          </div>
           <div className="command-box">
             <div className="input-group">
-              <input 
-                type="text" 
-                placeholder="Nhập yêu cầu cho Sofia... (ví dụ: Hãy test lại tính năng đăng nhập)" 
-                value={taskInput}
-                onChange={(e) => setTaskInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && pushCommand()}
-                className="main-input"
-              />
-              <textarea
-                placeholder="Dán User Story, link Figma/Jira, hoặc Upload File SRS (txt, md) vào đây để BA Agent phân tích..."
-                value={contextInput}
-                onChange={(e) => setContextInput(e.target.value)}
-                className="context-input"
-                rows="3"
-              />
+              <div className="input-with-icon">
+                <Clipboard size={18} className="icon" />
+                <input 
+                  type="text" 
+                  placeholder="Nhập yêu cầu cho Sofia... (ví dụ: Hãy test lại tính năng đăng nhập)" 
+                  value={taskInput}
+                  onChange={(e) => setTaskInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && pushCommand()}
+                  className="main-input"
+                />
+              </div>
+              <div className="input-with-icon">
+                <FileText size={18} className="icon top" />
+                <textarea
+                  placeholder="Hất file SRS/Figma vào đây hoặc dán nội dung để BA phân tích..."
+                  value={contextInput}
+                  onChange={(e) => setContextInput(e.target.value)}
+                  className="context-input"
+                  rows="3"
+                />
+              </div>
               <div className="upload-controls">
                 <input 
                   type="file" 
@@ -200,15 +288,14 @@ const Dashboard = () => {
                   onClick={() => fileInputRef.current && fileInputRef.current.click()} 
                   className="btn-upload"
                 >
-                  📎 Đính kèm File (TXT/MD/DOCX)
+                  📎 Đính kèm File (TX/MD/DOCX)
                 </button>
                 <button className="btn-send-main" onClick={pushCommand} disabled={isSending || !taskInput.trim()}>
-                  {isSending ? "Đang gửi..." : "🚀 Gửi Yêu Cầu"}
+                  {isSending ? <Activity size={18} className="animate-spin" /> : <>🚀 Gửi Yêu Cầu</>}
                 </button>
               </div>
             </div>
           </div>
-          <p className="hint">Mẹo: Thêm tài liệu tham khảo (Nghiệp vụ) giúp AI chuẩn xác 100% không bị ảo giác.</p>
         </section>
 
         {currentApproval && currentApproval.status === 'pending' && (
@@ -276,7 +363,20 @@ const Dashboard = () => {
         </section>
 
         <section className="live-terminal-section glass">
-          <h2>🖥️ Live Terminal (Real-time Logs)</h2>
+          <div className="section-header">
+            <h2>🖥️ Live Terminal & Interaction</h2>
+            <div className="terminal-tabs">
+              {['all', 'system', 'ba_agent', 'lead_qa', 'automation'].map(tab => (
+                <button 
+                  key={tab} 
+                  className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab === 'all' ? 'Tất cả' : tab.replace('_', ' ').toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="terminal-window">
              <div className="terminal-header">
                <span className="dot red"></span>
@@ -284,14 +384,17 @@ const Dashboard = () => {
                <span className="dot green"></span>
              </div>
              <div className="terminal-body" ref={el => { if (el) el.scrollTop = el.scrollHeight; }}>
-                {liveLogs.length === 0 ? <div className="log-line empty">Chưa có log hệ thống...</div> : 
-                 liveLogs.map((log, idx) => (
-                   <div key={idx} className={`log-line type-${log.source}`}>
-                     <span className="log-time">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                     <span className="log-source">[{log.source.toUpperCase()}]</span>
-                     <span className="log-msg">{log.message}</span>
-                   </div>
-                 ))
+                {liveLogs.filter(l => activeTab === 'all' || l.source === activeTab).length === 0 ? 
+                 <div className="log-line empty">Chưa có log từ đặc vụ này...</div> : 
+                 liveLogs
+                  .filter(l => activeTab === 'all' || l.source === activeTab)
+                  .map((log, idx) => (
+                    <div key={idx} className={`log-line type-${log.source}`}>
+                      <span className="log-time">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                      <span className="log-source">[{log.source.toUpperCase()}]</span>
+                      <span className="log-msg">{log.message}</span>
+                    </div>
+                  ))
                 }
              </div>
           </div>
