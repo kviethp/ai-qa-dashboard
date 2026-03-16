@@ -22,11 +22,11 @@ const Dashboard = () => {
   });
 
   const [agentStatuses, setAgentStatuses] = useState({
-    ba_agent: { name: "BA Đọc Lệnh", role: "Business Analyst", status: "idle", message: "Sẵn sàng" },
-    lead_qa: { name: "Lead QA Việt", role: "Team Lead", status: "idle", message: "Sẵn sàng" },
-    automation: { name: "Auto Bot", role: "Auto Engineer", status: "idle", message: "Sẵn sàng" },
-    reviewer: { name: "Review Master", role: "Code Reviewer", status: "idle", message: "Sẵn sàng" },
-    secretary: { name: "Thư ký Em", role: "Assistant", status: "idle", message: "Sẵn sàng" }
+    ba_agent: { name: "Business Analyser", role: "BA Agent", status: "idle", message: "Sẵn sàng" },
+    lead_qa: { name: "QA Lead", role: "Lead Agent", status: "idle", message: "Sẵn sàng" },
+    automation: { name: "Automation Tester", role: "Auto Engineer", status: "idle", message: "Sẵn sàng" },
+    reviewer: { name: "Reviewer", role: "Review Agent", status: "idle", message: "Sẵn sàng" },
+    secretary: { name: "Sofia", role: "Special Secretary", status: "idle", message: "Sẵn sàng" }
   });
 
   const [liveLogs, setLiveLogs] = useState([]);
@@ -38,15 +38,28 @@ const Dashboard = () => {
   const [agentChatInput, setAgentChatInput] = useState("");
   const [graphData, setGraphData] = useState({ 
     nodes: [
-      { id: 'Core', color: '#6366f1', size: 10 },
-      { id: 'Selectors', color: '#10b981', size: 6 },
-      { id: 'Flows', color: '#f59e0b', size: 6 }
+      { id: 'Core', color: '#6366f1', size: 12 },
+      { id: 'Selectors', color: '#10b981', size: 8 },
+      { id: 'Flows', color: '#f59e0b', size: 8 }
     ], 
     links: [
       { source: 'Core', target: 'Selectors' },
       { source: 'Core', target: 'Flows' }
     ] 
   });
+
+  // Responsive Hook for Graph
+  const [containerWidth, setContainerWidth] = useState(800);
+  useEffect(() => {
+    const updateWidth = () => {
+      const wrapper = document.querySelector('.graph-wrapper');
+      if (wrapper) setContainerWidth(wrapper.offsetWidth);
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
 
   useEffect(() => {
     if (isConfigured) {
@@ -298,11 +311,21 @@ const Dashboard = () => {
               graphData={graphData}
               nodeLabel="id"
               nodeColor={n => n.color}
-              nodeRelSize={6}
+              nodeCanvasObject={(node, ctx, globalScale) => {
+                const label = node.id;
+                const fontSize = 12/globalScale;
+                ctx.font = `${fontSize}px Inter`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = node.color;
+                ctx.beginPath(); ctx.arc(node.x, node.y, node.size || 5, 0, 2 * Math.PI, false); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.fillText(label, node.x, node.y + (node.size || 5) + 5);
+              }}
               linkDirectionalParticles={2}
-              linkDirectionalParticleSpeed={0.01}
+              linkDirectionalParticleSpeed={0.005}
               backgroundColor="rgba(0,0,0,0)"
-              width={800}
+              width={containerWidth}
               height={300}
             />
           </div>
@@ -441,6 +464,13 @@ const Dashboard = () => {
                 <button className={`tab-btn ${activeTab === 'automation' ? 'active' : ''}`} onClick={() => setActiveTab('automation')}>Automation Tester</button>
                 <button className={`tab-btn ${activeTab === 'reviewer' ? 'active' : ''}`} onClick={() => setActiveTab('reviewer')}>Reviewer</button>
              </div>
+          </div>
+          <div className="terminal-window">
+             <div className="terminal-header">
+               <span className="dot red"></span>
+               <span className="dot yellow"></span>
+               <span className="dot green"></span>
+             </div>
              <div className="terminal-body" ref={el => { if (el) el.scrollTop = el.scrollHeight; }}>
                 {liveLogs.filter(l => activeTab === 'all' || l.source === activeTab).length === 0 ? 
                  <div className="log-line empty">Chưa có log từ đặc vụ này...</div> : 
@@ -534,7 +564,7 @@ const Dashboard = () => {
       </main>
 
       <footer>
-        Made with ❤️ by Secretary Em for <span>Anh Việt</span>
+        Made with ❤️ by Thư ký Sofia for <span>Anh Việt</span>
       </footer>
     </div>
   );
