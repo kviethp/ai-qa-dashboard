@@ -10,8 +10,7 @@ import {
   CartesianGrid, 
   Tooltip 
 } from 'recharts';
-import { Activity, Cpu, Database, Clipboard, Layout, FileText, Send, MessageSquare, Share2 } from 'lucide-react';
-import ForceGraph2D from 'react-force-graph-2d';
+import { Activity, Cpu, Database, Clipboard, Layout, FileText, Send, MessageSquare, Check, X, Maximize2 } from 'lucide-react';
 
 const Dashboard = () => {
   const [stats] = useState({
@@ -36,42 +35,22 @@ const Dashboard = () => {
   const [dragActive, setDragActive] = useState(false);
   const [healthData, setHealthData] = useState([]);
   const [agentChatInput, setAgentChatInput] = useState("");
-  const [graphData, setGraphData] = useState({ 
-    nodes: [
-      { id: 'Core', color: '#6366f1', size: 12 },
-      { id: 'Selectors', color: '#10b981', size: 8 },
-      { id: 'Flows', color: '#f59e0b', size: 8 }
-    ], 
-    links: [
-      { source: 'Core', target: 'Selectors' },
-      { source: 'Core', target: 'Flows' }
-    ] 
-  });
+  const [isFullContext, setIsFullContext] = useState(false);
 
-  // Responsive Hook for Graph
+  // Width detection for charts
   const [containerWidth, setContainerWidth] = useState(0);
-  const graphWrapperRef = useRef(null);
+  const chartWrapperRef = useRef(null);
 
   useEffect(() => {
     const updateWidth = () => {
-      if (graphWrapperRef.current) {
-        const width = graphWrapperRef.current.offsetWidth;
-        if (width > 0) setContainerWidth(width);
+      if (chartWrapperRef.current) {
+        setContainerWidth(chartWrapperRef.current.offsetWidth);
       }
     };
-    
-    // Initial update
     updateWidth();
-
-    // Use ResizeObserver for more robust detection
     const observer = new ResizeObserver(updateWidth);
-    if (graphWrapperRef.current) {
-      observer.observe(graphWrapperRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
+    if (chartWrapperRef.current) observer.observe(chartWrapperRef.current);
+    return () => observer.disconnect();
   }, []);
 
 
@@ -99,25 +78,6 @@ const Dashboard = () => {
           const logsArray = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
           const newLogs = logsArray.slice(-100);
           setLiveLogs(newLogs);
-
-          // Cập nhật Knowledge Map khi có log mới (Proposal 1)
-          // Check the latest log for keywords
-          if (newLogs.length > 0) {
-            const latestLog = newLogs[newLogs.length - 1];
-            if (latestLog.message && (latestLog.message.includes("Selector") || latestLog.message.includes("Bug"))) {
-              setGraphData(g => {
-                const newId = `Learned_${Date.now()}`;
-                // Avoid adding duplicate nodes if the logic is triggered frequently for the same "learning"
-                if (!g.nodes.some(node => node.id === newId)) {
-                  return {
-                    nodes: [...g.nodes, { id: newId, color: '#fbbf24', size: 4 }],
-                    links: [...g.links, { source: 'Core', target: newId }]
-                  };
-                }
-                return g;
-              });
-            }
-          }
         }
       });
 
@@ -314,44 +274,44 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {/* Knowledge Map Visualization (Proposal 1) */}
-        <section className="knowledge-section glass">
-          <div className="section-header">
-            <h2><Share2 size={20} /> Neural Knowledge Map (Trí tuệ AI)</h2>
-            <div className="status-badge">AI đang ghi nhớ {graphData.nodes.length} thực thể</div>
-          </div>
-          <div className="graph-wrapper" ref={graphWrapperRef} style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {containerWidth > 0 ? (
-              <ForceGraph2D
-                graphData={graphData}
-                nodeLabel="id"
-                nodeColor={n => n.color}
-                nodeCanvasObject={(node, ctx, globalScale) => {
-                  try {
-                    const label = node.id;
-                    const fontSize = 12/globalScale;
-                    ctx.font = `${fontSize}px Inter`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = node.color || '#6366f1';
-                    ctx.beginPath(); ctx.arc(node.x, node.y, node.size || 5, 0, 2 * Math.PI, false); ctx.fill();
-                    ctx.fillStyle = '#fff';
-                    ctx.fillText(label, node.x, node.y + (node.size || 5) + 5);
-                  } catch (e) {
-                    console.error("Graph draw error:", e);
-                  }
-                }}
-                linkDirectionalParticles={2}
-                linkDirectionalParticleSpeed={0.005}
-                backgroundColor="rgba(0,0,0,0)"
-                width={containerWidth}
-                height={300}
-              />
-            ) : (
-              <div className="loading-graph">Đang chuẩn bị bản đồ Neural...</div>
-            )}
-          </div>
-        </section>
+        {currentApproval && currentApproval.status === 'pending' && (
+          <section className="approval-section glass">
+            <div className="section-header">
+              <h2>⚠️ CHỜ PHÊ DUYỆT: {currentApproval.task_name}</h2>
+              <div className="approval-badges">
+                <span className="badge type-approval" style={{ background: '#7c3aed', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>{currentApproval.type}</span>
+                <button 
+                   className="btn-icon-mini" 
+                   onClick={() => setIsFullContext(!isFullContext)}
+                   title={isFullContext ? "Thu nhỏ" : "Xem đầy đủ"}
+                >
+                  <Maximize2 size={14} />
+                </button>
+              </div>
+            </div>
+            
+            <div className={`approval-content markdown-preview ${isFullContext ? 'full' : 'compact'}`}>
+              <pre>{currentApproval.content}</pre>
+            </div>
+            
+            <div className="approval-actions-v2">
+              <button onClick={handleApprove} className="btn-approve-v2">
+                <Check size={18} /> ✅ DUYỆT NGAY
+              </button>
+              <div className="reject-group">
+                <input 
+                  type="text" 
+                  placeholder="Yêu cầu sửa đổi (Feedback)..."
+                  value={approvalFeedback}
+                  onChange={e => setApprovalFeedback(e.target.value)}
+                />
+                <button onClick={handleReject} className="btn-reject-v2">
+                  <X size={18} /> SỬA LẠI
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* New Command Section with Drag & Drop (Proposal 3) */}
         <section 
@@ -410,27 +370,6 @@ const Dashboard = () => {
           </div>
         </section>
 
-        {currentApproval && currentApproval.status === 'pending' && (
-          <section className="approval-section glass alert-border">
-            <h2>⚠️ Chờ Phê Duyệt: {currentApproval.task_name}</h2>
-            <div className="badge type-approval">{currentApproval.type}</div>
-            <div className="approval-content markdown-preview">
-              <pre>{currentApproval.content}</pre>
-            </div>
-            <div className="approval-actions">
-              <button onClick={handleApprove} className="btn-approve">✅ Ngon, Duyệt Luôn</button>
-              <div className="reject-box">
-                <input 
-                  type="text" 
-                  placeholder="Nhập feedback hướng dẫn AI sửa đổi lại..."
-                  value={approvalFeedback}
-                  onChange={e => setApprovalFeedback(e.target.value)}
-                />
-                <button onClick={handleReject} className="btn-reject">❌ Yêu Cầu Sửa Lại</button>
-              </div>
-            </div>
-          </section>
-        )}
 
         <section className="stats-grid">
           {/* ... existing stats ... */}
