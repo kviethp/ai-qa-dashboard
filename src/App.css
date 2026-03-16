@@ -260,6 +260,8 @@ td {
 
 .upload-controls {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 1rem;
   margin-top: 0.5rem;
 }
@@ -284,14 +286,12 @@ td {
   background: var(--primary);
   color: white;
   border: none;
-  padding: 0.8rem 2.5rem;
+  padding: 0.8rem 2rem;
   border-radius: 0.5rem;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s;
-  flex: 1;
-  max-width: 250px;
 }
 
 .btn-send-main:disabled {
