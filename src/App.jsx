@@ -433,22 +433,13 @@ const Dashboard = () => {
           <div className="section-header">
             <h2>🖥️ Live Terminal & Interaction</h2>
             <div className="terminal-tabs">
-              {['all', 'system', 'ba_agent', 'lead_qa', 'automation'].map(tab => (
-                <button 
-                  key={tab} 
-                  className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab === 'all' ? 'Tất cả' : tab.replace('_', ' ').toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="terminal-window">
-             <div className="terminal-header">
-               <span className="dot red"></span>
-               <span className="dot yellow"></span>
-               <span className="dot green"></span>
+                <button className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>Tất cả</button>
+                <button className={`tab-btn ${activeTab === 'system' ? 'active' : ''}`} onClick={() => setActiveTab('system')}>Hệ thống</button>
+                <button className={`tab-btn ${activeTab === 'secretary' ? 'active' : ''}`} onClick={() => setActiveTab('secretary')}>Thư ký Sofia</button>
+                <button className={`tab-btn ${activeTab === 'ba_agent' ? 'active' : ''}`} onClick={() => setActiveTab('ba_agent')}>Business Analyser</button>
+                <button className={`tab-btn ${activeTab === 'lead_qa' ? 'active' : ''}`} onClick={() => setActiveTab('lead_qa')}>QA Lead</button>
+                <button className={`tab-btn ${activeTab === 'automation' ? 'active' : ''}`} onClick={() => setActiveTab('automation')}>Automation Tester</button>
+                <button className={`tab-btn ${activeTab === 'reviewer' ? 'active' : ''}`} onClick={() => setActiveTab('reviewer')}>Reviewer</button>
              </div>
              <div className="terminal-body" ref={el => { if (el) el.scrollTop = el.scrollHeight; }}>
                 {liveLogs.filter(l => activeTab === 'all' || l.source === activeTab).length === 0 ? 
@@ -470,22 +461,30 @@ const Dashboard = () => {
                   <div className="agent-selector-mini">
                     <MessageSquare size={16} className="chat-icon" />
                     <select 
-                      value={activeTab === 'all' || activeTab === 'system' ? 'ba_agent' : activeTab} 
+                      value={activeTab === 'all' || activeTab === 'system' ? 'secretary' : activeTab} 
                       onChange={(e) => setActiveTab(e.target.value)}
                     >
-                      <option value="ba_agent">BA</option>
-                      <option value="lead_qa">Lead QA</option>
-                      <option value="automation">Coder</option>
+                      <option value="secretary">Sofia</option>
+                      <option value="ba_agent">Business Analyser</option>
+                      <option value="lead_qa">QA Lead</option>
+                      <option value="automation">Tester</option>
+                      <option value="reviewer">Reviewer</option>
                     </select>
                   </div>
                   <input 
                     type="text" 
-                    placeholder={`Gửi tin nhắn riêng tới ${activeTab === 'all' || activeTab === 'system' ? 'BA' : activeTab.replace('_', ' ').toUpperCase()}...`} 
+                    placeholder={`Gửi tin nhắn riêng tới ${
+                      activeTab === 'secretary' ? 'Thư ký Sofia' :
+                      activeTab === 'ba_agent' ? 'Business Analyser' :
+                      activeTab === 'lead_qa' ? 'QA Lead' :
+                      activeTab === 'automation' ? 'Automation Tester' :
+                      activeTab === 'reviewer' ? 'Reviewer' : 'Sofia'
+                    }...`} 
                     value={agentChatInput}
                     onChange={(e) => setAgentChatInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && pushCommand(agentChatInput, (activeTab === 'all' || activeTab === 'system' ? 'ba_agent' : activeTab))}
+                    onKeyPress={(e) => e.key === 'Enter' && pushCommand(agentChatInput, (activeTab === 'all' || activeTab === 'system' ? 'secretary' : activeTab))}
                   />
-                  <button onClick={() => pushCommand(agentChatInput, (activeTab === 'all' || activeTab === 'system' ? 'ba_agent' : activeTab))}>
+                  <button onClick={() => pushCommand(agentChatInput, (activeTab === 'all' || activeTab === 'system' ? 'secretary' : activeTab))}>
                     <Send size={14} />
                   </button>
                 </div>
