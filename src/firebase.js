@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, set, update, push } from "firebase/database";
 
 // Firebase configuration placeholder
 // Anh Việt sẽ thay các thông số này bằng thông số từ Firebase Console
@@ -24,4 +24,4 @@ if (isConfigured) {
   database = getDatabase(app);
 }
 
-export { database, ref, onValue, isConfigured };
+export { database, ref, onValue, set, update, push, isConfigured };

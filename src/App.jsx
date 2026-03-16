@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { database, ref, onValue, isConfigured } from './firebase';
+import { database, ref, onValue, set, isConfigured } from './firebase';
 import { 
   ResponsiveContainer, 
   AreaChart, 
@@ -10,7 +10,8 @@ import {
   CartesianGrid, 
   Tooltip 
 } from 'recharts';
-import { Activity, Cpu, Database, Clipboard, Layout, FileText, Send } from 'lucide-react';
+import { Activity, Cpu, Database, Clipboard, Layout, FileText, Send, MessageSquare, Share2 } from 'lucide-react';
+import ForceGraph2D from 'react-force-graph-2d';
 
 const Dashboard = () => {
   const [stats] = useState({
@@ -34,6 +35,18 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [dragActive, setDragActive] = useState(false);
   const [healthData, setHealthData] = useState([]);
+  const [agentChatInput, setAgentChatInput] = useState("");
+  const [graphData, setGraphData] = useState({ 
+    nodes: [
+      { id: 'Core', color: '#6366f1', size: 10 },
+      { id: 'Selectors', color: '#10b981', size: 6 },
+      { id: 'Flows', color: '#f59e0b', size: 6 }
+    ], 
+    links: [
+      { source: 'Core', target: 'Selectors' },
+      { source: 'Core', target: 'Flows' }
+    ] 
+  });
 
   useEffect(() => {
     if (isConfigured) {
@@ -57,7 +70,27 @@ const Dashboard = () => {
         const data = snapshot.val();
         if (data) {
           const logsArray = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
-          setLiveLogs(logsArray.slice(-100)); // Keep last 100 logs
+          const newLogs = logsArray.slice(-100);
+          setLiveLogs(newLogs);
+
+          // Cập nhật Knowledge Map khi có log mới (Proposal 1)
+          // Check the latest log for keywords
+          if (newLogs.length > 0) {
+            const latestLog = newLogs[newLogs.length - 1];
+            if (latestLog.message && (latestLog.message.includes("Selector") || latestLog.message.includes("Bug"))) {
+              setGraphData(g => {
+                const newId = `Learned_${Date.now()}`;
+                // Avoid adding duplicate nodes if the logic is triggered frequently for the same "learning"
+                if (!g.nodes.some(node => node.id === newId)) {
+                  return {
+                    nodes: [...g.nodes, { id: newId, color: '#fbbf24', size: 4 }],
+                    links: [...g.links, { source: 'Core', target: newId }]
+                  };
+                }
+                return g;
+              });
+            }
+          }
         }
       });
 
@@ -127,8 +160,14 @@ const Dashboard = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileUpload({ target: { files: e.dataTransfer.files } });
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        alert("🖼️ Phát hiện ảnh chụp màn hình! AI đang sử dụng Vision để phân tích giao diện...");
+        // Mock Vision Analysis
+        setTaskInput("Phân tích giao diện từ ảnh chụp màn hình và đề xuất Test Case...");
+      }
+      handleFileUpload({ target: { files: [file] } });
     }
   };
 
@@ -162,27 +201,34 @@ const Dashboard = () => {
     { id: 3, title: "API Timeout on search", source: "GitLab", status: "Resolved", severity: "Critical" },
   ];
 
-  const pushCommand = async () => {
-    if (!taskInput.trim() || !isConfigured) return;
+  const pushCommand = (text = null, agent = null) => {
+    if (!isConfigured) return;
+    const commandText = text || taskInput;
+    if (!commandText.trim()) return;
+
     setIsSending(true);
-    try {
-      const { set } = await import("firebase/database");
-      const commandRef = ref(database, 'commands/last_command');
-      await set(commandRef, {
-        text: taskInput,
-        context: contextInput, // Gửi Document Text
-        timestamp: Date.now(),
-        source: "dashboard"
-      });
-      setTaskInput("");
-      setContextInput("");
-      alert("🚀 Đã gửi yêu cầu tới AI Team!");
-    } catch (err) {
+    const cmdRef = ref(database, 'commands/last_command');
+    const newCmd = {
+      text: commandText,
+      context: contextInput,
+      target_agent: agent || (activeTab !== 'all' && activeTab !== 'system' ? activeTab : null),
+      timestamp: Date.now()
+    };
+    
+    set(cmdRef, newCmd).then(() => {
+      setIsSending(false);
+      if (!agent) {
+        setTaskInput("");
+        setContextInput("");
+        alert("🚀 Đã gửi yêu cầu tới AI Team!");
+      } else {
+        setAgentChatInput("");
+      }
+    }).catch((err) => {
       console.error("Failed to send command", err);
       alert("❌ Lỗi khi gửi lệnh.");
-    } finally {
       setIsSending(false);
-    }
+    });
   };
 
   const handleApprove = async () => {
@@ -238,6 +284,27 @@ const Dashboard = () => {
                 <Area type="monotone" dataKey="latency" stroke="#6366f1" fillOpacity={1} fill="url(#colorLatency)" />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+        </section>
+
+        {/* Knowledge Map Visualization (Proposal 1) */}
+        <section className="knowledge-section glass">
+          <div className="section-header">
+            <h2><Share2 size={20} /> Neural Knowledge Map (Trí tuệ AI)</h2>
+            <div className="status-badge">AI đang ghi nhớ {graphData.nodes.length} thực thể</div>
+          </div>
+          <div className="graph-wrapper" style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', overflow: 'hidden' }}>
+            <ForceGraph2D
+              graphData={graphData}
+              nodeLabel="id"
+              nodeColor={n => n.color}
+              nodeRelSize={6}
+              linkDirectionalParticles={2}
+              linkDirectionalParticleSpeed={0.01}
+              backgroundColor="rgba(0,0,0,0)"
+              width={800}
+              height={300}
+            />
           </div>
         </section>
 
@@ -396,6 +463,33 @@ const Dashboard = () => {
                     </div>
                   ))
                 }
+             </div>
+             {/* Permanent Chat Box for Interaction (Proposal 2) */}
+             <div className="agent-chat-input">
+                <div className="chat-container-inner">
+                  <div className="agent-selector-mini">
+                    <MessageSquare size={16} className="chat-icon" />
+                    <select 
+                      value={activeTab === 'all' || activeTab === 'system' ? 'ba_agent' : activeTab} 
+                      onChange={(e) => setActiveTab(e.target.value)}
+                    >
+                      <option value="ba_agent">BA</option>
+                      <option value="lead_qa">Lead QA</option>
+                      <option value="automation">Coder</option>
+                    </select>
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder={`Gửi tin nhắn riêng tới ${activeTab === 'all' || activeTab === 'system' ? 'BA' : activeTab.replace('_', ' ').toUpperCase()}...`} 
+                    value={agentChatInput}
+                    onChange={(e) => setAgentChatInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && pushCommand(agentChatInput, (activeTab === 'all' || activeTab === 'system' ? 'ba_agent' : activeTab))}
+                  />
+                  <button onClick={() => pushCommand(agentChatInput, (activeTab === 'all' || activeTab === 'system' ? 'ba_agent' : activeTab))}>
+                    <Send size={14} />
+                  </button>
+                </div>
+                <p className="chat-hint">Sếp có thể nhắn tin trực tiếp để hướng dẫn từng Agent mà không cần chạy cả quy trình.</p>
              </div>
           </div>
         </section>

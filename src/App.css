@@ -296,9 +296,105 @@ td {
   top: 1.2rem;
 }
 
-.input-with-icon input, .input-with-icon textarea {
-  padding-left: 3rem !important;
+/* Neural Knowledge Map (Proposal 1) */
+.knowledge-section {
+  grid-column: 1 / -1;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  overflow: hidden;
 }
+
+.status-badge {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.graph-wrapper {
+  transition: all 0.3s ease;
+  border: 1px solid var(--glass-border);
+}
+
+.graph-wrapper:hover {
+  background: rgba(0,0,0,0.4) !important;
+}
+
+/* Agent Chat Input (Proposal 2) */
+.agent-chat-input {
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.5);
+  border-top: 1px solid var(--glass-border);
+}
+
+.chat-container-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+}
+
+.chat-container-inner input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.chat-container-inner button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chat-container-inner button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px var(--primary);
+}
+
+.agent-selector-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-right: 1px solid var(--glass-border);
+  padding-right: 0.8rem;
+}
+
+.agent-selector-mini select {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.chat-hint {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-style: italic;
+}
+
+
 
 
 .command-box {
