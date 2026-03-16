@@ -8,8 +8,8 @@
     "message": "Sẵn sàng"
   },
   "automation": {
-    "status": "working",
-    "message": "Đang xử lý: Viết/Sửa code cho task: Tôi sẽ..."
+    "status": "waiting",
+    "message": "Đang chờ user duyệt Code..."
   },
   "reviewer": {
     "status": "idle",

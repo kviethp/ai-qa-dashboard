@@ -1,7 +1,31 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './App.css';
 import { database, ref, onValue, set, isConfigured } from './firebase';
-import { Clipboard, Layout, FileText, Send, MessageSquare, Check, X, Maximize2 } from 'lucide-react';
+import { Clipboard, Layout, FileText, Send, MessageSquare, Check, X, Maximize2, Loader2, RefreshCw } from 'lucide-react';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) { return { hasError: true }; }
+  componentDidCatch(error, errorInfo) { console.error("Crash detected:", error, errorInfo); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="crash-screen">
+          <h1>🌪️ Oops! Giao diện gặp lỗi rồi Sếp ơi.</h1>
+          <p>Có thể dữ liệu từ server đang gặp chút vấn đề. Sếp thử nhấn nút bên dưới để tải lại trang nhé.</p>
+          <button onClick={() => window.location.reload()} className="btn-send-main">
+            <RefreshCw size={18} /> TẢI LẠI TRANG
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const Dashboard = () => {
   const [stats] = useState({
@@ -293,7 +317,7 @@ const Dashboard = () => {
                   📎 Đính kèm File (TX/MD/DOCX)
                 </button>
                 <button className="btn-send-main" onClick={pushCommand} disabled={isSending || !taskInput.trim()}>
-                  {isSending ? <Activity size={18} className="animate-spin" /> : <>🚀 Gửi Yêu Cầu</>}
+                  {isSending ? <Loader2 size={18} className="animate-spin" /> : <>🚀 Gửi Yêu Cầu</>}
                 </button>
               </div>
             </div>
@@ -329,14 +353,14 @@ const Dashboard = () => {
           <h2>🤖 AI Agent Status</h2>
           <div className="agent-grid">
             {Object.entries(agentStatuses).map(([id, agent]) => (
-              <div key={id} className={`agent-card glass ${agent.status}`}>
+              <div key={id} className={`agent-card glass ${agent?.status || 'idle'}`}>
                 <div className="agent-info">
                   <div className="agent-header">
-                    <span className="agent-name">{agent.name}</span>
-                    <span className={`status-pill ${agent.status}`}>{agent.status.toUpperCase()}</span>
+                    <span className="agent-name">{agent?.name || id}</span>
+                    <span className={`status-pill ${agent?.status || 'idle'}`}>{(agent?.status || 'idle').toUpperCase()}</span>
                   </div>
-                  <div className="agent-role">{agent.role}</div>
-                  <div className="agent-msg">"{agent.message}"</div>
+                  <div className="agent-role">{agent?.role || 'Agent'}</div>
+                  <div className="agent-msg">"{agent?.message || 'Đang sẵn sàng phục vụ sếp...'}"</div>
                 </div>
               </div>
             ))}
@@ -363,15 +387,15 @@ const Dashboard = () => {
                <span className="dot green"></span>
              </div>
              <div className="terminal-body" ref={el => { if (el) el.scrollTop = el.scrollHeight; }}>
-                {liveLogs.filter(l => activeTab === 'all' || l.source === activeTab).length === 0 ? 
+                {liveLogs.filter(l => l && (activeTab === 'all' || l.source === activeTab)).length === 0 ? 
                  <div className="log-line empty">Chưa có log từ đặc vụ này...</div> : 
                  liveLogs
-                  .filter(l => activeTab === 'all' || l.source === activeTab)
+                  .filter(l => l && (activeTab === 'all' || l.source === activeTab))
                   .map((log, idx) => (
-                    <div key={idx} className={`log-line type-${log.source}`}>
-                      <span className="log-time">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                      <span className="log-source">[{log.source.toUpperCase()}]</span>
-                      <span className="log-msg">{log.message}</span>
+                    <div key={idx} className={`log-line type-${log?.source || 'system'}`}>
+                      <span className="log-time">[{log?.timestamp ? new Date(log.timestamp).toLocaleTimeString() : '---'}]</span>
+                      <span className="log-source">[{(log?.source || 'system').toUpperCase()}]</span>
+                      <span className="log-msg">{log?.message || ''}</span>
                     </div>
                   ))
                 }
@@ -461,4 +485,8 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default () => (
+  <ErrorBoundary>
+    <Dashboard />
+  </ErrorBoundary>
+);
