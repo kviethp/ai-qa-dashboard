@@ -1,11 +1,15 @@
 {
+  "ba_agent": {
+    "status": "idle",
+    "message": "Sẵn sàng"
+  },
   "lead_qa": {
     "status": "idle",
     "message": "Sẵn sàng"
   },
   "automation": {
-    "status": "idle",
-    "message": "Sẵn sàng"
+    "status": "working",
+    "message": "Đang xử lý: Viết/Sửa code cho task: Anh Vi..."
   },
   "reviewer": {
     "status": "idle",
@@ -13,6 +17,6 @@
   },
   "secretary": {
     "status": "idle",
-    "message": "Sẵn sàng"
+    "message": "Hoàn tất"
   }
 }

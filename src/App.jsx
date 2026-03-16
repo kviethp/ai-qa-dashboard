@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './App.css';
 import { database, ref, onValue, set, isConfigured } from './firebase';
 import { 
@@ -49,15 +49,29 @@ const Dashboard = () => {
   });
 
   // Responsive Hook for Graph
-  const [containerWidth, setContainerWidth] = useState(800);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const graphWrapperRef = useRef(null);
+
   useEffect(() => {
     const updateWidth = () => {
-      const wrapper = document.querySelector('.graph-wrapper');
-      if (wrapper) setContainerWidth(wrapper.offsetWidth);
+      if (graphWrapperRef.current) {
+        const width = graphWrapperRef.current.offsetWidth;
+        if (width > 0) setContainerWidth(width);
+      }
     };
+    
+    // Initial update
     updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
+
+    // Use ResizeObserver for more robust detection
+    const observer = new ResizeObserver(updateWidth);
+    if (graphWrapperRef.current) {
+      observer.observe(graphWrapperRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
 
@@ -306,28 +320,36 @@ const Dashboard = () => {
             <h2><Share2 size={20} /> Neural Knowledge Map (Trí tuệ AI)</h2>
             <div className="status-badge">AI đang ghi nhớ {graphData.nodes.length} thực thể</div>
           </div>
-          <div className="graph-wrapper" style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', overflow: 'hidden' }}>
-            <ForceGraph2D
-              graphData={graphData}
-              nodeLabel="id"
-              nodeColor={n => n.color}
-              nodeCanvasObject={(node, ctx, globalScale) => {
-                const label = node.id;
-                const fontSize = 12/globalScale;
-                ctx.font = `${fontSize}px Inter`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = node.color;
-                ctx.beginPath(); ctx.arc(node.x, node.y, node.size || 5, 0, 2 * Math.PI, false); ctx.fill();
-                ctx.fillStyle = '#fff';
-                ctx.fillText(label, node.x, node.y + (node.size || 5) + 5);
-              }}
-              linkDirectionalParticles={2}
-              linkDirectionalParticleSpeed={0.005}
-              backgroundColor="rgba(0,0,0,0)"
-              width={containerWidth}
-              height={300}
-            />
+          <div className="graph-wrapper" ref={graphWrapperRef} style={{ height: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '1rem', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {containerWidth > 0 ? (
+              <ForceGraph2D
+                graphData={graphData}
+                nodeLabel="id"
+                nodeColor={n => n.color}
+                nodeCanvasObject={(node, ctx, globalScale) => {
+                  try {
+                    const label = node.id;
+                    const fontSize = 12/globalScale;
+                    ctx.font = `${fontSize}px Inter`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = node.color || '#6366f1';
+                    ctx.beginPath(); ctx.arc(node.x, node.y, node.size || 5, 0, 2 * Math.PI, false); ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.fillText(label, node.x, node.y + (node.size || 5) + 5);
+                  } catch (e) {
+                    console.error("Graph draw error:", e);
+                  }
+                }}
+                linkDirectionalParticles={2}
+                linkDirectionalParticleSpeed={0.005}
+                backgroundColor="rgba(0,0,0,0)"
+                width={containerWidth}
+                height={300}
+              />
+            ) : (
+              <div className="loading-graph">Đang chuẩn bị bản đồ Neural...</div>
+            )}
           </div>
         </section>
 

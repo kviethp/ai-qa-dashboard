@@ -837,3 +837,16 @@ footer {
 footer span {
   color: #818cf8;
 }
+
+.loading-graph {
+  color: #64748b;
+  font-size: 0.9rem;
+  font-style: italic;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
