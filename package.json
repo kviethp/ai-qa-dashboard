@@ -1,0 +1,11 @@
+{
+  "name": "ai-qa-agent-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dashboard:install": "cd Dashboard && npm install",
+    "dashboard:dev": "cd Dashboard && npm run dev",
+    "dashboard:build": "cd Dashboard && npm run build",
+    "bot:start": "python orchestrator.py"
+  }
+}
