@@ -1,0 +1,29 @@
+{
+  "project_pitfalls": [
+    {
+      "issue": "Sử dụng waitForTimeout(4000)",
+      "consequence": "Flaky test, chạy lúc được lúc không tùy vào tốc độ mạng, làm chậm pipeline.",
+      "solution": "Sử dụng await locator.waitFor({ state: 'visible' }) hoặc expect(locator).toBeVisible()."
+    },
+    {
+      "issue": "Dùng .last() để chọn phần tử trong danh sách search",
+      "consequence": "Rủi ro chọn sai dữ liệu nếu có nhiều kết quả tương tự.",
+      "solution": "Sử dụng text-is hoặc locator lọc theo text chính xác: filter({ hasText: /^Tên Chính Xác$/ })."
+    },
+    {
+      "issue": "Click({ force: true }) khi element bị che bởi loading overlay",
+      "consequence": "Test pass giả (False Positive) nhưng thực tế UI chưa sẵn sàng.",
+      "solution": "Dùng method removeLoadingOverlay() từ BasePage hoặc chờ overlay biến mất."
+    },
+    {
+      "issue": "Hardcode URL trong test file",
+      "consequence": "Khó bảo trì khi chuyển đổi môi trường (Dev/Stag/Prod).",
+      "solution": "Sử dụng navigate() trong Page Object và kế thừa từ BasePage."
+    }
+  ],
+  "naming_conventions": {
+    "files": "*.spec.ts (tests), *.page.ts (POM)",
+    "classes": "PascalCase (VD: LoginPage)",
+    "methods": "camelCase + động từ (VD: loginToSystem)"
+  }
+}
